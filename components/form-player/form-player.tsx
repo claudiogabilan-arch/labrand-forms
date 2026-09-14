@@ -291,10 +291,6 @@ export function FormPlayer({ form }: FormPlayerProps) {
       y: 0,
       opacity: 1,
     },
-    exit: (direction: number) => ({
-      y: direction > 0 ? -100 : 100,
-      opacity: 0,
-    }),
   }
 
   return (
@@ -324,15 +320,13 @@ export function FormPlayer({ form }: FormPlayerProps) {
       {/* Main content */}
       <main className="flex-1 flex items-center justify-center p-6 pt-12">
         <div className="w-full max-w-2xl">
-          <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={currentIndex}
               custom={direction}
               variants={slideVariants}
               initial="enter"
               animate="center"
-              exit="exit"
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
             >
               {/* Question number */}
               <motion.div 
@@ -459,7 +453,6 @@ export function FormPlayer({ form }: FormPlayerProps) {
                 </span>
               </motion.div>
             </motion.div>
-          </AnimatePresence>
         </div>
       </main>
 
