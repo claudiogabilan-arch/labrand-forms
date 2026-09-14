@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans, Plus_Jakarta_Sans, Outfit, Sora, Inter } from "next/font/google";
+import { DM_Sans, Plus_Jakarta_Sans, Outfit, Sora, Inter, Space_Grotesk, Chakra_Petch } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -28,6 +28,17 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+});
+
+const chakraPetch = Chakra_Petch({
+  variable: "--font-chakra",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
 export const metadata: Metadata = {
   title: "LABrand Forms",
   description: "Formulários que fazem uma pergunta por vez. Diagnósticos, briefings e pesquisas no padrão LABrand.",
@@ -41,7 +52,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body
-        className={`${dmSans.variable} ${plusJakarta.variable} ${outfit.variable} ${sora.variable} ${inter.variable} antialiased`}
+        className={`${dmSans.variable} ${plusJakarta.variable} ${outfit.variable} ${sora.variable} ${inter.variable} ${spaceGrotesk.variable} ${chakraPetch.variable} antialiased`}
       >
         {children}
         <Toaster richColors position="top-center" />

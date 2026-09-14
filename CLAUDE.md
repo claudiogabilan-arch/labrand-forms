@@ -79,9 +79,9 @@ Add new types by:
 
 ### Theme System
 
-7 presets in `lib/themes.ts`: labrand (default), midnight, ocean, sunset, forest, lavender, minimal
+9 presets in `lib/themes.ts`: labrand (default), ofne, brandboss, midnight, ocean, sunset, forest, lavender, minimal
 
-Each theme defines: `primaryColor`, `backgroundColor`, `textColor`, `accentColor`, `fontFamily`
+Each theme defines: `primaryColor`, `backgroundColor`, `textColor`, `accentColor`, `fontFamily` (use `var(--font-*)` set by next/font in `app/layout.tsx`). Adding a preset: themes.ts + ThemePreset union + `ALTER TYPE theme_preset ADD VALUE` no Supabase.
 
 Use `getThemeCSSVariables()` to apply as inline CSS custom properties.
 

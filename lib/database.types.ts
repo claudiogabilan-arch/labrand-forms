@@ -28,6 +28,8 @@ export type FormStatus = 'draft' | 'published' | 'closed'
 // Theme presets
 export type ThemePreset = 
   | 'labrand'
+  | 'ofne'
+  | 'brandboss'
   | 'midnight'
   | 'ocean'
   | 'sunset'

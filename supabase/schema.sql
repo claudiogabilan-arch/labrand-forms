@@ -6,7 +6,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Create enum types
 CREATE TYPE form_status AS ENUM ('draft', 'published', 'closed');
-CREATE TYPE theme_preset AS ENUM ('labrand', 'midnight', 'ocean', 'sunset', 'forest', 'lavender', 'minimal');
+CREATE TYPE theme_preset AS ENUM ('labrand', 'ofne', 'brandboss', 'midnight', 'ocean', 'sunset', 'forest', 'lavender', 'minimal');
 
 -- Profiles table (extends Supabase auth.users)
 CREATE TABLE profiles (

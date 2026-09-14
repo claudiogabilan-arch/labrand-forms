@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Form, QuestionConfig, ThemePreset, FormStatus } from '@/lib/database.types'
-import { questionTypes, createDefaultQuestion } from '@/lib/questions'
+import { questionTypes, createDefaultQuestion, getQuestionTypeInfo } from '@/lib/questions'
 import { themes, themeList } from '@/lib/themes'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -306,8 +306,8 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
                                     <span className="text-xs font-medium text-slate-400">
                                       {index + 1}
                                     </span>
-                                    <span className="text-xs text-slate-400 capitalize">
-                                      {question.type.replace('_', ' ')}
+                                    <span className="text-xs text-slate-400">
+                                      {getQuestionTypeInfo(question.type)?.label ?? question.type}
                                     </span>
                                     {question.required && (
                                       <span className="text-xs text-red-500">*</span>
