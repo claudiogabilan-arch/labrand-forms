@@ -54,8 +54,8 @@ export default async function HomePage() {
           <div className="flex items-center gap-4">
             {user ? (
               <Link href="/dashboard">
-                <Button className="bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all hover:shadow-blue-600/30 hover:-translate-y-0.5">
-                  Dashboard
+                <Button className="bg-slate-900 hover:bg-slate-800 shadow-lg shadow-slate-900/20 transition-all hover:shadow-slate-900/30 hover:-translate-y-0.5">
+                  Painel
                   <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
               </Link>
@@ -63,12 +63,12 @@ export default async function HomePage() {
               <>
                 <Link href="/login">
                   <Button variant="ghost" className="text-slate-600 hover:text-slate-900">
-                    Sign in
+                    Entrar
                   </Button>
                 </Link>
                 <Link href="/login">
-                  <Button className="bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all hover:shadow-blue-600/30 hover:-translate-y-0.5">
-                    Get Started
+                  <Button className="bg-slate-900 hover:bg-slate-800 shadow-lg shadow-slate-900/20 transition-all hover:shadow-slate-900/30 hover:-translate-y-0.5">
+                    Acessar
                     <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>
                 </Link>
@@ -81,33 +81,33 @@ export default async function HomePage() {
       {/* Hero Section */}
       <section className="relative z-10 pt-32 pb-20 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 text-blue-700 text-sm font-medium mb-8 border border-blue-100">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 text-amber-800 text-sm font-medium mb-8 border border-amber-100">
             <Sparkles className="w-4 h-4" />
-            Free & Open Source
+            LABrand · Brand Operational System
           </div>
           
           <h1 className="text-5xl md:text-7xl font-bold text-slate-900 leading-tight mb-6 tracking-tight">
-            Forms that feel{' '}
-            <span className="text-blue-600">
-              human
+            Formulários que fazem{' '}
+            <span className="text-amber-700">
+              uma pergunta por vez.
             </span>
           </h1>
           
           <p className="text-xl text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Create beautiful, engaging forms that people actually want to fill out. 
-            One question at a time, just like a conversation.
+            Diagnósticos, briefings e pesquisas com a experiência de conversa, 
+            no padrão LABrand.
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/login">
-              <Button size="lg" className="h-14 px-8 text-lg bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-600/25 transition-all hover:shadow-blue-600/35 hover:-translate-y-0.5">
-                Start creating for free
+              <Button size="lg" className="h-14 px-8 text-lg bg-slate-900 hover:bg-slate-800 shadow-xl shadow-slate-900/25 transition-all hover:shadow-slate-900/35 hover:-translate-y-0.5">
+                Acessar
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
             <Link href="#features">
               <Button size="lg" variant="outline" className="h-14 px-8 text-lg border-slate-300 hover:border-slate-400 hover:bg-slate-50">
-                See how it works
+                Como funciona
               </Button>
             </Link>
           </div>
@@ -117,7 +117,7 @@ export default async function HomePage() {
       {/* Demo Preview */}
       <section className="relative z-10 px-6 pb-20">
         <div className="max-w-5xl mx-auto">
-          <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-blue-900/10 border border-slate-200/80 bg-white">
+          <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-slate-900/10 border border-slate-200/80 bg-white">
             {/* Browser chrome */}
             <div className="flex items-center gap-2 px-4 py-3 bg-slate-100 border-b border-slate-200">
               <div className="flex gap-1.5">
@@ -127,22 +127,22 @@ export default async function HomePage() {
               </div>
               <div className="flex-1 flex justify-center">
                 <div className="px-4 py-1 bg-white rounded-md text-xs text-slate-500 font-medium">
-                  openform.app/your-form
+                  forms.labrand.com.br/seu-formulario
                 </div>
               </div>
             </div>
-            <div className="aspect-video bg-gradient-to-br from-blue-600 via-blue-500 to-sky-500 flex items-center justify-center relative overflow-hidden">
+            <div className="aspect-video bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 flex items-center justify-center relative overflow-hidden">
               {/* Decorative circles */}
               <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
-              <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-sky-400/10 rounded-full blur-3xl"></div>
+              <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-400/10 rounded-full blur-3xl"></div>
               
               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-8 max-w-lg text-center border border-white/20">
-                <h3 className="text-3xl font-bold text-white mb-4">What&apos;s your name?</h3>
+                <h3 className="text-3xl font-bold text-white mb-4">Qual é o nome da sua empresa?</h3>
                 <div className="bg-white/20 rounded-lg h-14 flex items-center px-4 border border-white/10">
-                  <span className="text-white/60 text-lg">Type your answer here...</span>
+                  <span className="text-white/60 text-lg">Digite sua resposta aqui...</span>
                 </div>
                 <div className="mt-6 flex items-center justify-center gap-3">
-                  <span className="text-white/60 text-sm">Press</span>
+                  <span className="text-white/60 text-sm">Pressione</span>
                   <kbd className="px-3 py-1 bg-white/20 rounded text-white text-sm font-medium border border-white/10">Enter ↵</kbd>
                 </div>
               </div>
@@ -156,31 +156,31 @@ export default async function HomePage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4 tracking-tight">
-              Everything you need to create amazing forms
+              O essencial para coletar respostas com critério
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Powerful features that make form building a breeze
+              Sem excesso de recursos. O que importa é a qualidade da resposta.
             </p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="p-6 rounded-2xl bg-gradient-to-br from-blue-50 to-white border border-blue-100/60 hover:shadow-lg hover:shadow-blue-100/50 transition-all duration-300">
-              <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mb-4">
-                <Zap className="w-6 h-6 text-blue-600" />
+            <div className="p-6 rounded-2xl bg-gradient-to-br from-amber-50 to-white border border-amber-100/60 hover:shadow-lg hover:shadow-amber-100/50 transition-all duration-300">
+              <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center mb-4">
+                <Zap className="w-6 h-6 text-amber-700" />
               </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-2">One at a Time</h3>
+              <h3 className="text-xl font-semibold text-slate-900 mb-2">Uma pergunta por vez</h3>
               <p className="text-slate-600">
-                Questions appear one by one, creating a focused, distraction-free experience for respondents.
+                As perguntas aparecem uma a uma. Foco total do respondente, sem distração.
               </p>
             </div>
             
-            <div className="p-6 rounded-2xl bg-gradient-to-br from-sky-50 to-white border border-sky-100/60 hover:shadow-lg hover:shadow-sky-100/50 transition-all duration-300">
-              <div className="w-12 h-12 rounded-xl bg-sky-100 flex items-center justify-center mb-4">
-                <Palette className="w-6 h-6 text-sky-600" />
+            <div className="p-6 rounded-2xl bg-gradient-to-br from-stone-50 to-white border border-stone-100/60 hover:shadow-lg hover:shadow-stone-100/50 transition-all duration-300">
+              <div className="w-12 h-12 rounded-xl bg-stone-100 flex items-center justify-center mb-4">
+                <Palette className="w-6 h-6 text-stone-600" />
               </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-2">Beautiful Themes</h3>
+              <h3 className="text-xl font-semibold text-slate-900 mb-2">Identidade LABrand</h3>
               <p className="text-slate-600">
-                Choose from stunning preset themes that make your forms look professional and on-brand.
+                Tema visual alinhado ao sistema da marca. O formulário fala a mesma língua do resto do trabalho.
               </p>
             </div>
             
@@ -188,9 +188,9 @@ export default async function HomePage() {
               <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center mb-4">
                 <Shield className="w-6 h-6 text-emerald-600" />
               </div>
-              <h3 className="text-xl font-semibold text-slate-900 mb-2">Privacy First</h3>
+              <h3 className="text-xl font-semibold text-slate-900 mb-2">Dados sob controle</h3>
               <p className="text-slate-600">
-                Your data stays yours. Export responses anytime, delete when you want.
+                As respostas ficam com você. Exporte em CSV a qualquer momento e exclua quando quiser.
               </p>
             </div>
           </div>
@@ -202,22 +202,22 @@ export default async function HomePage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4 tracking-tight">
-              13 question types to choose from
+              13 tipos de pergunta
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              From simple text to file uploads, we&apos;ve got you covered
+              De texto curto a envio de arquivos.
             </p>
           </div>
           
           <div className="flex flex-wrap justify-center gap-3">
             {[
-              'Short Text', 'Long Text', 'Dropdown', 'Checkboxes',
-              'Email', 'Phone', 'Number', 'Date', 'Rating', 'Opinion Scale',
-              'Yes/No', 'File Upload', 'Website URL'
+              'Texto curto', 'Texto longo', 'Lista suspensa', 'Múltipla escolha',
+              'E-mail', 'Telefone', 'Número', 'Data', 'Avaliação', 'Escala de opinião',
+              'Sim/Não', 'Envio de arquivo', 'Site (URL)'
             ].map((type) => (
               <span
                 key={type}
-                className="px-4 py-2 bg-white rounded-full border border-slate-200 text-slate-700 text-sm font-medium shadow-sm hover:border-blue-200 hover:bg-blue-50 transition-colors cursor-default"
+                className="px-4 py-2 bg-white rounded-full border border-slate-200 text-slate-700 text-sm font-medium shadow-sm hover:border-amber-200 hover:bg-amber-50 transition-colors cursor-default"
               >
                 {type}
               </span>
@@ -229,20 +229,20 @@ export default async function HomePage() {
       {/* CTA */}
       <section className="relative z-10 py-20 px-6 bg-white">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="bg-gradient-to-br from-blue-600 via-blue-600 to-sky-500 rounded-3xl p-12 md:p-16 text-white relative overflow-hidden">
+          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 rounded-3xl p-12 md:p-16 text-white relative overflow-hidden">
             {/* Decorative elements */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-sky-400/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-amber-400/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
             
             <h2 className="text-3xl md:text-4xl font-bold mb-4 relative">
-              Ready to create your first form?
+              Acesse a área de formulários
             </h2>
-            <p className="text-lg text-blue-100 mb-8 relative">
-              Join thousands of people using OpenForm to collect responses.
+            <p className="text-lg text-slate-300 mb-8 relative">
+              Ferramenta de uso interno do LABrand para diagnósticos, briefings e pesquisas.
             </p>
             <Link href="/login">
-              <Button size="lg" className="h-14 px-8 text-lg bg-white text-blue-600 hover:bg-blue-50 shadow-xl shadow-blue-900/20 relative transition-all hover:-translate-y-0.5">
-                Get started for free
+              <Button size="lg" className="h-14 px-8 text-lg bg-white text-amber-700 hover:bg-amber-50 shadow-xl shadow-slate-900/20 relative transition-all hover:-translate-y-0.5">
+                Entrar
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
@@ -254,17 +254,17 @@ export default async function HomePage() {
       <footer className="relative z-10 py-8 px-6 border-t border-slate-100 bg-white">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-slate-600 text-sm">
-            © 2026 OpenForm. Open source and free forever.
+            © 2026 LABrand Forms · Claudio Gabilan
           </p>
           <div className="flex items-center gap-6">
             <a href="https://github.com" className="text-slate-500 hover:text-slate-700 text-sm transition-colors">
               GitHub
             </a>
             <a href="#" className="text-slate-500 hover:text-slate-700 text-sm transition-colors">
-              Privacy
+              Privacidade
             </a>
             <a href="#" className="text-slate-500 hover:text-slate-700 text-sm transition-colors">
-              Terms
+              Termos
             </a>
           </div>
         </div>

@@ -1,6 +1,6 @@
-# OpenForm
+# LABrand Forms
 
-An open-source TypeForm clone built with Next.js 16, Supabase, and Tailwind CSS.
+Fork do OpenForm (TypeForm clone) para o LABrand — UI em pt-BR, tema `labrand` padrão, webhook por formulário via trigger pg_net (`supabase/schema.sql`), coluna `forms.webhook_url` oculta do role anon (selecionar colunas explicitamente em `app/f/[slug]`). Built with Next.js 16, Supabase, and Tailwind CSS.
 
 ## Tech Stack
 
@@ -79,7 +79,7 @@ Add new types by:
 
 ### Theme System
 
-6 presets in `lib/themes.ts`: midnight, ocean, sunset, forest, lavender, minimal
+7 presets in `lib/themes.ts`: labrand (default), midnight, ocean, sunset, forest, lavender, minimal
 
 Each theme defines: `primaryColor`, `backgroundColor`, `textColor`, `accentColor`, `fontFamily`
 

@@ -1,9 +1,18 @@
 import { ThemeConfig, ThemePreset } from './database.types'
 
 export const themes: Record<ThemePreset, ThemeConfig> = {
+  labrand: {
+    id: 'labrand',
+    name: 'LABrand',
+    primaryColor: '#C9A24A',
+    backgroundColor: '#111214',
+    textColor: '#F4F1EA',
+    accentColor: '#E0BC66',
+    fontFamily: "'DM Sans', sans-serif",
+  },
   midnight: {
     id: 'midnight',
-    name: 'Midnight',
+    name: 'Meia-noite',
     primaryColor: '#8B5CF6',
     backgroundColor: '#0F0F1A',
     textColor: '#FFFFFF',
@@ -12,7 +21,7 @@ export const themes: Record<ThemePreset, ThemeConfig> = {
   },
   ocean: {
     id: 'ocean',
-    name: 'Ocean',
+    name: 'Oceano',
     primaryColor: '#0EA5E9',
     backgroundColor: '#0C1929',
     textColor: '#F0F9FF',
@@ -21,7 +30,7 @@ export const themes: Record<ThemePreset, ThemeConfig> = {
   },
   sunset: {
     id: 'sunset',
-    name: 'Sunset',
+    name: 'Pôr do sol',
     primaryColor: '#F97316',
     backgroundColor: '#FFFBEB',
     textColor: '#1C1917',
@@ -30,7 +39,7 @@ export const themes: Record<ThemePreset, ThemeConfig> = {
   },
   forest: {
     id: 'forest',
-    name: 'Forest',
+    name: 'Floresta',
     primaryColor: '#10B981',
     backgroundColor: '#022C22',
     textColor: '#ECFDF5',
@@ -39,7 +48,7 @@ export const themes: Record<ThemePreset, ThemeConfig> = {
   },
   lavender: {
     id: 'lavender',
-    name: 'Lavender',
+    name: 'Lavanda',
     primaryColor: '#A855F7',
     backgroundColor: '#FAF5FF',
     textColor: '#1E1B4B',
@@ -48,7 +57,7 @@ export const themes: Record<ThemePreset, ThemeConfig> = {
   },
   minimal: {
     id: 'minimal',
-    name: 'Minimal',
+    name: 'Minimalista',
     primaryColor: '#18181B',
     backgroundColor: '#FFFFFF',
     textColor: '#18181B',
@@ -60,7 +69,7 @@ export const themes: Record<ThemePreset, ThemeConfig> = {
 export const themeList = Object.values(themes)
 
 export function getTheme(preset: ThemePreset): ThemeConfig {
-  return themes[preset] || themes.minimal
+  return themes[preset] || themes.labrand
 }
 
 // Generate CSS variables from theme

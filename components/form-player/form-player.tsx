@@ -43,12 +43,12 @@ export function FormPlayer({ form }: FormPlayerProps) {
     
     if (currentQuestion.required) {
       if (answer === undefined || answer === null || answer === '') {
-        setErrors({ ...errors, [currentQuestion.id]: 'This field is required' })
+        setErrors({ ...errors, [currentQuestion.id]: 'Este campo é obrigatório' })
         return false
       }
       
       if (Array.isArray(answer) && answer.length === 0) {
-        setErrors({ ...errors, [currentQuestion.id]: 'Please select at least one option' })
+        setErrors({ ...errors, [currentQuestion.id]: 'Selecione ao menos uma opção' })
         return false
       }
     }
@@ -57,7 +57,7 @@ export function FormPlayer({ form }: FormPlayerProps) {
     if (answer && currentQuestion.type === 'email') {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       if (!emailRegex.test(String(answer))) {
-        setErrors({ ...errors, [currentQuestion.id]: 'Please enter a valid email address' })
+        setErrors({ ...errors, [currentQuestion.id]: 'Digite um e-mail válido' })
         return false
       }
     }
@@ -66,7 +66,7 @@ export function FormPlayer({ form }: FormPlayerProps) {
       try {
         new URL(String(answer))
       } catch {
-        setErrors({ ...errors, [currentQuestion.id]: 'Please enter a valid URL' })
+        setErrors({ ...errors, [currentQuestion.id]: 'Digite uma URL válida' })
         return false
       }
     }
@@ -74,7 +74,7 @@ export function FormPlayer({ form }: FormPlayerProps) {
     if (answer && currentQuestion.type === 'phone') {
       const phoneRegex = /^[+]?[\d\s\-().]+$/
       if (!phoneRegex.test(String(answer))) {
-        setErrors({ ...errors, [currentQuestion.id]: 'Please enter a valid phone number' })
+        setErrors({ ...errors, [currentQuestion.id]: 'Digite um telefone válido' })
         return false
       }
     }
@@ -85,6 +85,27 @@ export function FormPlayer({ form }: FormPlayerProps) {
     setErrors(newErrors)
     return true
   }, [currentQuestion, answers, errors])
+
+  const handleSubmit = useCallback(async () => {
+    if (!validateCurrentQuestion()) return
+    
+    setIsSubmitting(true)
+    
+    const insertData = {
+      form_id: form.id,
+      answers: answers,
+    }
+    const { error } = await supabase
+      .from('responses')
+      .insert(insertData as never)
+
+    if (error) {
+      toast.error('Não foi possível enviar sua resposta')
+      setIsSubmitting(false)
+    } else {
+      setIsSubmitted(true)
+    }
+  }, [validateCurrentQuestion, answers, form.id, supabase])
 
   const goToNext = useCallback((skipValidation?: boolean) => {
     // Check both the parameter and the ref for skip validation
@@ -99,33 +120,12 @@ export function FormPlayer({ form }: FormPlayerProps) {
       setDirection(1)
       setCurrentIndex(prev => Math.min(prev + 1, questions.length - 1))
     }
-  }, [isLastQuestion, questions.length, validateCurrentQuestion])
+  }, [isLastQuestion, questions.length, validateCurrentQuestion, handleSubmit])
 
   const goToPrevious = useCallback(() => {
     setDirection(-1)
     setCurrentIndex(prev => Math.max(prev - 1, 0))
   }, [])
-
-  const handleSubmit = async () => {
-    if (!validateCurrentQuestion()) return
-    
-    setIsSubmitting(true)
-    
-    const insertData = {
-      form_id: form.id,
-      answers: answers,
-    }
-    const { error } = await supabase
-      .from('responses')
-      .insert(insertData as never)
-
-    if (error) {
-      toast.error('Failed to submit response')
-      setIsSubmitting(false)
-    } else {
-      setIsSubmitted(true)
-    }
-  }
 
   const updateAnswer = (questionId: string, value: Json) => {
     setAnswers(prev => ({ ...prev, [questionId]: value }))
@@ -239,10 +239,10 @@ export function FormPlayer({ form }: FormPlayerProps) {
             className="text-lg opacity-70"
             style={{ color: theme.textColor }}
           >
-            Your response has been recorded.
+            Sua resposta foi registrada.
           </p>
           
-          {/* OpenForm branding */}
+          {/* LABrand Forms branding */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -250,14 +250,14 @@ export function FormPlayer({ form }: FormPlayerProps) {
             className="mt-12"
           >
             <a 
-              href="/"
+              href="https://claudiogabilan.com.br"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-sm opacity-50 hover:opacity-70 transition-opacity"
               style={{ color: theme.textColor }}
             >
-              <span>Made with</span>
-              <span className="font-semibold">OpenForm</span>
+              <span>Feito com</span>
+              <span className="font-semibold">LABrand Forms</span>
             </a>
           </motion.div>
         </motion.div>
@@ -276,7 +276,7 @@ export function FormPlayer({ form }: FormPlayerProps) {
         }}
       >
         <p style={{ color: theme.textColor }} className="opacity-50">
-          This form has no questions yet.
+          Este formulário ainda não tem perguntas.
         </p>
       </div>
     )
@@ -358,7 +358,7 @@ export function FormPlayer({ form }: FormPlayerProps) {
                 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3"
                 style={{ color: theme.textColor }}
               >
-                {currentQuestion.title || 'Untitled question'}
+                {currentQuestion.title || 'Pergunta sem título'}
                 {currentQuestion.required && (
                   <span style={{ color: theme.primaryColor }} className="ml-1">*</span>
                 )}
@@ -437,10 +437,10 @@ export function FormPlayer({ form }: FormPlayerProps) {
                   }}
                 >
                   {isSubmitting ? (
-                    'Submitting...'
+                    'Enviando...'
                   ) : isLastQuestion ? (
                     <>
-                      Submit
+                      Enviar
                       <Check className="w-4 h-4 ml-2" />
                     </>
                   ) : (
@@ -455,7 +455,7 @@ export function FormPlayer({ form }: FormPlayerProps) {
                   className="text-sm opacity-50"
                   style={{ color: theme.textColor }}
                 >
-                  press <kbd className="font-mono font-medium">Enter ↵</kbd>
+                  pressione <kbd className="font-mono font-medium">Enter ↵</kbd>
                 </span>
               </motion.div>
             </motion.div>
@@ -488,15 +488,15 @@ export function FormPlayer({ form }: FormPlayerProps) {
           </Button>
         </div>
 
-        {/* OpenForm branding */}
+        {/* LABrand Forms branding */}
         <a 
-          href="/"
+          href="https://claudiogabilan.com.br"
           target="_blank"
           rel="noopener noreferrer"
           className="text-sm opacity-50 hover:opacity-70 transition-opacity"
           style={{ color: theme.textColor }}
         >
-          Powered by <span className="font-semibold">OpenForm</span>
+          Feito com <span className="font-semibold">LABrand Forms</span>
         </a>
       </footer>
     </div>

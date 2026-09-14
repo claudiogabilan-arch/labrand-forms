@@ -54,7 +54,7 @@ interface ResponsesDashboardProps {
 }
 
 function formatDate(date: string) {
-  return new Date(date).toLocaleString('en-US', {
+  return new Date(date).toLocaleString('pt-BR', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -96,7 +96,7 @@ function getFileUrl(file: FileUpload): string {
 
 function formatAnswer(answer: Json): string {
   if (answer === null || answer === undefined) return '-'
-  if (typeof answer === 'boolean') return answer ? 'Yes' : 'No'
+  if (typeof answer === 'boolean') return answer ? 'Sim' : 'Não'
   if (Array.isArray(answer)) return answer.join(', ')
   if (typeof answer === 'object') {
     // Handle file uploads
@@ -149,10 +149,10 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
       .eq('id', responseToDelete)
 
     if (error) {
-      toast.error('Failed to delete response')
+      toast.error('Não foi possível excluir a resposta')
     } else {
       setResponses(prev => prev.filter(r => r.id !== responseToDelete))
-      toast.success('Response deleted')
+      toast.success('Resposta excluída')
     }
     setIsDeleting(false)
     setDeleteDialogOpen(false)
@@ -161,12 +161,12 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
 
   const exportToCSV = () => {
     if (responses.length === 0) {
-      toast.error('No responses to export')
+      toast.error('Nenhuma resposta para exportar')
       return
     }
 
     // Build CSV header
-    const headers = ['Submitted At', ...questions.map(q => q.title || 'Untitled')]
+    const headers = ['Enviado em', ...questions.map(q => q.title || 'Sem título')]
     
     // Build CSV rows
     const rows = responses.map(response => {
@@ -189,17 +189,17 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
     link.href = URL.createObjectURL(blob)
-    link.download = `${form.title || 'form'}-responses-${new Date().toISOString().split('T')[0]}.csv`
+    link.download = `${form.title || 'formulario'}-respostas-${new Date().toISOString().split('T')[0]}.csv`
     link.click()
     URL.revokeObjectURL(link.href)
     
-    toast.success('CSV exported successfully')
+    toast.success('CSV exportado')
   }
 
   const copyFormLink = () => {
     const link = `${window.location.origin}/f/${form.slug}`
     navigator.clipboard.writeText(link)
-    toast.success('Link copied to clipboard')
+    toast.success('Link copiado')
   }
 
   return (
@@ -210,7 +210,7 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
           <Link href="/dashboard">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+              Voltar
             </Button>
           </Link>
         </div>
@@ -220,17 +220,17 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-slate-900">{form.title}</h1>
               {form.status === 'published' && (
-                <Badge className="bg-emerald-100 text-emerald-700">Published</Badge>
+                <Badge className="bg-emerald-100 text-emerald-700">Publicado</Badge>
               )}
               {form.status === 'draft' && (
-                <Badge variant="secondary">Draft</Badge>
+                <Badge variant="secondary">Rascunho</Badge>
               )}
               {form.status === 'closed' && (
-                <Badge variant="secondary" className="bg-amber-100 text-amber-700">Closed</Badge>
+                <Badge variant="secondary" className="bg-amber-100 text-amber-700">Encerrado</Badge>
               )}
             </div>
             <p className="text-slate-600 mt-1">
-              {responses.length} {responses.length === 1 ? 'response' : 'responses'}
+              {responses.length} {responses.length === 1 ? 'resposta' : 'respostas'}
             </p>
           </div>
 
@@ -238,19 +238,19 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
             <Link href={`/forms/${form.id}/edit`}>
               <Button variant="outline" size="sm">
                 <Pencil className="w-4 h-4 mr-2" />
-                Edit Form
+                Editar formulário
               </Button>
             </Link>
             {form.status === 'published' && (
               <>
                 <Button variant="outline" size="sm" onClick={copyFormLink}>
                   <Copy className="w-4 h-4 mr-2" />
-                  Copy Link
+                  Copiar link
                 </Button>
                 <Link href={`/f/${form.slug}`} target="_blank">
                   <Button variant="outline" size="sm">
                     <ExternalLink className="w-4 h-4 mr-2" />
-                    View Form
+                    Ver formulário
                   </Button>
                 </Link>
               </>
@@ -265,17 +265,17 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
             <FileText className="w-8 h-8 text-slate-400" />
           </div>
-          <h2 className="text-xl font-semibold text-slate-900 mb-2">No responses yet</h2>
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">Nenhuma resposta ainda</h2>
           <p className="text-slate-600 max-w-sm mx-auto">
             {form.status === 'published' 
-              ? 'Share your form to start collecting responses'
-              : 'Publish your form to start collecting responses'
+              ? 'Compartilhe o link para começar a receber respostas'
+              : 'Publique o formulário para começar a receber respostas'
             }
           </p>
           {form.status === 'published' && (
-            <Button onClick={copyFormLink} className="mt-6 bg-blue-600 hover:bg-blue-700">
+            <Button onClick={copyFormLink} className="mt-6 bg-slate-900 hover:bg-slate-800">
               <Copy className="w-4 h-4 mr-2" />
-              Copy form link
+              Copiar link do formulário
             </Button>
           )}
         </Card>
@@ -286,7 +286,7 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input
-                placeholder="Search responses..."
+                placeholder="Buscar respostas..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -294,7 +294,7 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
             </div>
             <Button onClick={exportToCSV} variant="outline">
               <Download className="w-4 h-4 mr-2" />
-              Export CSV
+              Exportar CSV
             </Button>
           </div>
 
@@ -304,11 +304,11 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[180px] sticky left-0 bg-white z-10 pl-6">Submitted</TableHead>
+                    <TableHead className="w-[180px] sticky left-0 bg-white z-10 pl-6">Enviado em</TableHead>
                     {questions.map((question, index) => (
                       <TableHead key={question.id} className="min-w-[200px]">
                         <span className="text-slate-400 mr-2">{index + 1}.</span>
-                        {question.title || 'Untitled'}
+                        {question.title || 'Sem título'}
                         {question.required && <span className="text-red-500 ml-1">*</span>}
                       </TableHead>
                     ))}
@@ -334,7 +334,7 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
                               <TableCell key={question.id} className="max-w-[300px]">
                                 <button
                                   onClick={() => setFilePreview(file)}
-                                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 transition-colors text-sm group"
+                                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 transition-colors text-sm group"
                                 >
                                   {isImage ? (
                                     <ImageIcon className="w-4 h-4" />
@@ -370,7 +370,7 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
                                 className="text-red-600 focus:text-red-600"
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
+                                Excluir
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -386,7 +386,7 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
 
           {filteredResponses.length === 0 && searchQuery && (
             <div className="text-center py-12">
-              <p className="text-slate-500">No responses match your search</p>
+              <p className="text-slate-500">Nenhuma resposta corresponde à busca</p>
             </div>
           )}
         </>
@@ -396,21 +396,21 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete response</DialogTitle>
+            <DialogTitle>Excluir resposta</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this response? This action cannot be undone.
+              Tem certeza? Esta resposta será excluída e a ação não pode ser desfeita.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
-              Cancel
+              Cancelar
             </Button>
             <Button 
               variant="destructive" 
               onClick={handleDelete}
               disabled={isDeleting}
             >
-              {isDeleting ? 'Deleting...' : 'Delete'}
+              {isDeleting ? 'Excluindo...' : 'Excluir'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -422,9 +422,9 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {filePreview?.type?.startsWith('image/') ? (
-                <ImageIcon className="w-5 h-5 text-blue-600" />
+                <ImageIcon className="w-5 h-5 text-amber-700" />
               ) : (
-                <File className="w-5 h-5 text-blue-600" />
+                <File className="w-5 h-5 text-amber-700" />
               )}
               <span className="truncate">{filePreview?.name}</span>
             </DialogTitle>
@@ -449,25 +449,25 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-slate-500">
                 <File className="w-16 h-16 mb-4 opacity-50" />
-                <p>Preview not available for this file type</p>
+                <p>Pré-visualização indisponível para este tipo de arquivo</p>
               </div>
             )}
           </div>
 
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setFilePreview(null)}>
-              Close
+              Fechar
             </Button>
             {filePreview?.url ? (
               <a href={filePreview.url} target="_blank" rel="noopener noreferrer" download={filePreview.name}>
-                <Button className="bg-blue-600 hover:bg-blue-700">
+                <Button className="bg-slate-900 hover:bg-slate-800">
                   <Download className="w-4 h-4 mr-2" />
-                  Download
+                  Baixar
                 </Button>
               </a>
             ) : (
               <Button
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-slate-900 hover:bg-slate-800"
                 onClick={() => {
                   if (filePreview?.data) {
                     const link = document.createElement('a')
@@ -478,7 +478,7 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
                 }}
               >
                 <Download className="w-4 h-4 mr-2" />
-                Download
+                Baixar
               </Button>
             )}
           </DialogFooter>

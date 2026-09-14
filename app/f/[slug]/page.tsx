@@ -23,12 +23,12 @@ export async function generateMetadata({ params }: FormPageProps) {
   const form = data as { title: string; description: string | null } | null
 
   if (!form) {
-    return { title: 'Form Not Found' }
+    return { title: 'Formulário não encontrado' }
   }
 
   return {
-    title: form.title || 'Form',
-    description: form.description || 'Fill out this form',
+    title: form.title || 'Formulário',
+    description: form.description || 'Preencha este formulário',
   }
 }
 
@@ -38,12 +38,12 @@ export default async function FormPage({ params }: FormPageProps) {
 
   const { data, error } = await supabase
     .from('forms')
-    .select('*')
+    .select('id, user_id, title, description, slug, status, theme, questions, thank_you_message, created_at, updated_at')
     .eq('slug', slug)
     .eq('status', 'published')
     .single()
 
-  const form = data as Form | null
+  const form = data as unknown as Form | null
 
   if (error || !form) {
     notFound()

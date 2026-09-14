@@ -27,6 +27,7 @@ export type FormStatus = 'draft' | 'published' | 'closed'
 
 // Theme presets
 export type ThemePreset = 
+  | 'labrand'
   | 'midnight'
   | 'ocean'
   | 'sunset'
@@ -100,6 +101,7 @@ export interface Database {
           theme: ThemePreset
           questions: QuestionConfig[]
           thank_you_message: string
+          webhook_url: string | null
           created_at: string
           updated_at: string
         }
@@ -113,6 +115,7 @@ export interface Database {
           theme?: ThemePreset
           questions?: QuestionConfig[]
           thank_you_message?: string
+          webhook_url?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -124,6 +127,7 @@ export interface Database {
           theme?: ThemePreset
           questions?: QuestionConfig[]
           thank_you_message?: string
+          webhook_url?: string | null
           updated_at?: string
         }
       }

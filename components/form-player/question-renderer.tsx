@@ -56,14 +56,14 @@ function FileUploadQuestion({ question, value, onChange, theme }: FileUploadQues
             setIsUploading(false)
           }
           reader.onerror = () => {
-            setUploadError('Failed to read file')
+            setUploadError('Não foi possível ler o arquivo')
             setIsUploading(false)
           }
           reader.readAsDataURL(file)
           return
         }
         
-        throw new Error(result.error || 'Upload failed')
+        throw new Error(result.error || 'Falha no envio do arquivo')
       }
 
       // Success - store the R2 URL
@@ -74,7 +74,7 @@ function FileUploadQuestion({ question, value, onChange, theme }: FileUploadQues
         url: result.url,
       })
     } catch (error) {
-      setUploadError(error instanceof Error ? error.message : 'Upload failed')
+      setUploadError(error instanceof Error ? error.message : 'Falha no envio do arquivo')
     } finally {
       setIsUploading(false)
     }
@@ -139,7 +139,7 @@ function FileUploadQuestion({ question, value, onChange, theme }: FileUploadQues
           }}
         >
           <Loader2 className="w-8 h-8 animate-spin" style={{ color: theme.primaryColor }} />
-          <p className="font-medium">Uploading...</p>
+          <p className="font-medium">Enviando...</p>
         </div>
       ) : (
         <div>
@@ -156,9 +156,9 @@ function FileUploadQuestion({ question, value, onChange, theme }: FileUploadQues
           >
             <Upload className="w-8 h-8 opacity-50" />
             <div className="text-center">
-              <p className="font-medium">Click to upload</p>
+              <p className="font-medium">Clique para enviar um arquivo</p>
               <p className="text-sm opacity-50 mt-1">
-                Images & PDFs up to {question.maxFileSize || 10}MB
+                Imagens e PDFs de até {question.maxFileSize || 10}MB
               </p>
             </div>
           </motion.button>
@@ -214,7 +214,7 @@ export function QuestionRenderer({
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          placeholder={question.placeholder || 'Type your answer here...'}
+          placeholder={question.placeholder || (question.type === 'phone' ? '(11) 99999-9999' : 'Digite sua resposta aqui...')}
           className="text-xl md:text-2xl h-auto py-3 px-0 border-0 border-b-2 rounded-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:opacity-40"
           style={inputStyles}
           autoFocus
@@ -228,7 +228,7 @@ export function QuestionRenderer({
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          placeholder={question.placeholder || 'Type your answer here...'}
+          placeholder={question.placeholder || 'Digite sua resposta aqui...'}
           className="text-lg md:text-xl min-h-[150px] p-4 border-2 rounded-xl bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:opacity-40 resize-none"
           style={inputStyles}
           autoFocus
@@ -340,7 +340,7 @@ export function QuestionRenderer({
             )
           })}
           <p className="text-sm opacity-50 mt-2" style={{ color: theme.textColor }}>
-            Select all that apply
+            Selecione todas as opções que se aplicam
           </p>
         </div>
       )
@@ -348,7 +348,7 @@ export function QuestionRenderer({
     case 'yes_no':
       return (
         <div className="flex gap-4">
-          {['Yes', 'No'].map((option) => {
+          {['Sim', 'Não'].map((option) => {
             const isSelected = value === option
             return (
               <motion.button
@@ -462,7 +462,7 @@ export function QuestionRenderer({
         <FileUploadQuestion
           question={question}
           value={value as FileUploadValue | null}
-          onChange={onChange}
+          onChange={(v) => onChange(v as unknown as Json)}
           theme={theme}
         />
       )
@@ -470,7 +470,7 @@ export function QuestionRenderer({
     default:
       return (
         <p style={{ color: theme.textColor }} className="opacity-50">
-          Unsupported question type: {question.type}
+          Tipo de pergunta não suportado: {question.type}
         </p>
       )
   }

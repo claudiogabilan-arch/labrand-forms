@@ -74,6 +74,7 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
       theme: form.theme,
       questions: questions,
       thank_you_message: form.thank_you_message,
+      webhook_url: form.webhook_url?.trim() || null,
     }
     const { error } = await supabase
       .from('forms')
@@ -81,9 +82,9 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
       .eq('id', form.id)
 
     if (error) {
-      toast.error('Failed to save form')
+      toast.error('Não foi possível salvar o formulário')
     } else {
-      toast.success('Form saved')
+      toast.success('Formulário salvo')
       setHasUnsavedChanges(false)
     }
     setIsSaving(false)
@@ -91,7 +92,7 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
 
   const handlePublish = async () => {
     if (questions.length === 0) {
-      toast.error('Add at least one question before publishing')
+      toast.error('Adicione pelo menos uma pergunta antes de publicar')
       return
     }
 
@@ -106,6 +107,7 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
       slug: form.slug,
       theme: form.theme,
       thank_you_message: form.thank_you_message,
+      webhook_url: form.webhook_url?.trim() || null,
     }
     const { error } = await supabase
       .from('forms')
@@ -113,10 +115,10 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
       .eq('id', form.id)
 
     if (error) {
-      toast.error('Failed to update form status')
+      toast.error('Não foi possível atualizar o status do formulário')
     } else {
       setForm({ ...form, status: newStatus })
-      toast.success(newStatus === 'published' ? 'Form published!' : 'Form unpublished')
+      toast.success(newStatus === 'published' ? 'Formulário publicado!' : 'Formulário despublicado')
       setShowPublishDialog(false)
       setHasUnsavedChanges(false)
     }
@@ -154,10 +156,10 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
   const copyFormLink = () => {
     const link = `${window.location.origin}/f/${form.slug}`
     navigator.clipboard.writeText(link)
-    toast.success('Link copied to clipboard')
+    toast.success('Link copiado')
   }
 
-  const currentTheme = themes[form.theme as ThemePreset] || themes.minimal
+  const currentTheme = themes[form.theme as ThemePreset] || themes.labrand
 
   return (
     <div className="h-screen flex flex-col bg-slate-50">
@@ -167,7 +169,7 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
           <Link href="/dashboard">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+              Voltar
             </Button>
           </Link>
           <Separator orientation="vertical" className="h-6" />
@@ -178,22 +180,22 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
                 setForm({ ...form, title: e.target.value })
                 setHasUnsavedChanges(true)
               }}
-              className="text-lg font-semibold border-0 border-b-2 border-transparent bg-transparent rounded-none focus-visible:ring-0 focus-visible:border-blue-500 hover:border-slate-300 px-1 pr-7 max-w-xs transition-colors"
-              placeholder="Untitled Form"
+              className="text-lg font-semibold border-0 border-b-2 border-transparent bg-transparent rounded-none focus-visible:ring-0 focus-visible:border-amber-500 hover:border-slate-300 px-1 pr-7 max-w-xs transition-colors"
+              placeholder="Formulário sem título"
             />
             <Pencil className="w-3.5 h-3.5 text-slate-400 absolute right-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-0 transition-opacity pointer-events-none" />
           </div>
           {form.status === 'published' && (
-            <Badge className="bg-emerald-100 text-emerald-700">Published</Badge>
+            <Badge className="bg-emerald-100 text-emerald-700">Publicado</Badge>
           )}
           {form.status === 'draft' && (
-            <Badge variant="secondary">Draft</Badge>
+            <Badge variant="secondary">Rascunho</Badge>
           )}
           {form.status === 'closed' && (
-            <Badge variant="secondary" className="bg-amber-100 text-amber-700">Closed</Badge>
+            <Badge variant="secondary" className="bg-amber-100 text-amber-700">Encerrado</Badge>
           )}
           {hasUnsavedChanges && (
-            <span className="text-sm text-slate-500">Unsaved changes</span>
+            <span className="text-sm text-slate-500">Alterações não salvas</span>
           )}
         </div>
 
@@ -202,12 +204,12 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
             <>
               <Button variant="outline" size="sm" onClick={copyFormLink}>
                 <Copy className="w-4 h-4 mr-2" />
-                Copy link
+                Copiar link
               </Button>
               <Link href={`/f/${form.slug}`} target="_blank">
                 <Button variant="outline" size="sm">
                   <ExternalLink className="w-4 h-4 mr-2" />
-                  View
+                  Ver
                 </Button>
               </Link>
             </>
@@ -219,18 +221,18 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
             disabled={isSaving}
           >
             <Save className="w-4 h-4 mr-2" />
-            Save
+            Salvar
           </Button>
           <Button
             size="sm"
             onClick={() => setShowPublishDialog(true)}
             className={form.status === 'published' 
               ? 'bg-amber-500 hover:bg-amber-600' 
-              : 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20'
+              : 'bg-slate-900 hover:bg-slate-800 shadow-lg shadow-slate-900/20'
             }
           >
             <Globe className="w-4 h-4 mr-2" />
-            {form.status === 'published' ? 'Unpublish' : 'Publish'}
+            {form.status === 'published' ? 'Despublicar' : 'Publicar'}
           </Button>
         </div>
       </header>
@@ -244,7 +246,7 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="questions" className="text-xs">
                   <FileText className="w-3 h-3 mr-1" />
-                  Questions
+                  Perguntas
                 </TabsTrigger>
                 <TabsTrigger value="design" className="text-xs">
                   <Palette className="w-3 h-3 mr-1" />
@@ -252,7 +254,7 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
                 </TabsTrigger>
                 <TabsTrigger value="settings" className="text-xs">
                   <Settings className="w-3 h-3 mr-1" />
-                  Settings
+                  Configurações
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -261,10 +263,10 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
               <div className="shrink-0 p-4 border-b border-slate-100">
                 <Button 
                   onClick={() => setShowAddQuestion(true)}
-                  className="w-full bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20"
+                  className="w-full bg-slate-900 hover:bg-slate-800 shadow-lg shadow-slate-900/20"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Add Question
+                  Adicionar pergunta
                 </Button>
               </div>
               
@@ -273,8 +275,8 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
                   {questions.length === 0 ? (
                     <div className="text-center py-8 px-4">
                       <FileText className="w-12 h-12 mx-auto text-slate-300 mb-3" />
-                      <p className="text-sm text-slate-500">No questions yet</p>
-                      <p className="text-xs text-slate-400 mt-1">Add your first question to get started</p>
+                      <p className="text-sm text-slate-500">Nenhuma pergunta ainda</p>
+                      <p className="text-xs text-slate-400 mt-1">Adicione sua primeira pergunta para começar</p>
                     </div>
                   ) : (
                     <Reorder.Group axis="y" values={questions} onReorder={handleReorder}>
@@ -289,7 +291,7 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
                               className={`
                                 group p-3 rounded-lg cursor-pointer mb-2 border transition-all
                                 ${selectedQuestionId === question.id 
-                                  ? 'bg-blue-50 border-blue-200' 
+                                  ? 'bg-amber-50 border-amber-200' 
                                   : 'bg-white border-slate-100 hover:border-slate-200'
                                 }
                               `}
@@ -312,7 +314,7 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
                                     )}
                                   </div>
                                   <p className="text-sm font-medium text-slate-900 truncate">
-                                    {question.title || 'Untitled question'}
+                                    {question.title || 'Pergunta sem título'}
                                   </p>
                                 </div>
                                 <Button
@@ -340,7 +342,7 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
             <TabsContent value="design" className="flex-1 mt-0 overflow-auto data-[state=inactive]:hidden">
               <div className="p-4 space-y-6">
                 <div>
-                  <Label className="text-sm font-medium mb-3 block">Theme</Label>
+                  <Label className="text-sm font-medium mb-3 block">Tema</Label>
                   <div className="grid grid-cols-2 gap-2">
                     {themeList.map((theme) => (
                       <button
@@ -352,7 +354,7 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
                         className={`
                           p-3 rounded-lg border-2 transition-all text-left
                           ${form.theme === theme.id 
-                            ? 'border-blue-500 ring-2 ring-blue-200' 
+                            ? 'border-amber-500 ring-2 ring-amber-200' 
                             : 'border-slate-200 hover:border-slate-300'
                           }
                         `}
@@ -377,7 +379,7 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
             <TabsContent value="settings" className="flex-1 mt-0 overflow-auto data-[state=inactive]:hidden">
               <div className="p-4 space-y-6">
                 <div>
-                  <Label htmlFor="slug" className="text-sm font-medium">Form URL</Label>
+                  <Label htmlFor="slug" className="text-sm font-medium">URL do formulário</Label>
                   <div className="mt-2 flex items-center gap-2">
                     <span className="text-sm text-slate-500">/f/</span>
                     <Input
@@ -389,13 +391,13 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
                         setHasUnsavedChanges(true)
                       }}
                       className="flex-1"
-                      placeholder="my-form"
+                      placeholder="meu-formulario"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="description" className="text-sm font-medium">Description</Label>
+                  <Label htmlFor="description" className="text-sm font-medium">Descrição</Label>
                   <Textarea
                     id="description"
                     value={form.description || ''}
@@ -404,13 +406,13 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
                       setHasUnsavedChanges(true)
                     }}
                     className="mt-2"
-                    placeholder="Optional form description..."
+                    placeholder="Descrição opcional do formulário..."
                     rows={3}
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="thank_you" className="text-sm font-medium">Thank You Message</Label>
+                  <Label htmlFor="thank_you" className="text-sm font-medium">Mensagem de agradecimento</Label>
                   <Textarea
                     id="thank_you"
                     value={form.thank_you_message}
@@ -419,9 +421,27 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
                       setHasUnsavedChanges(true)
                     }}
                     className="mt-2"
-                    placeholder="Thank you for your response!"
+                    placeholder="Obrigado pela sua resposta."
                     rows={3}
                   />
+                </div>
+
+                <div>
+                  <Label htmlFor="webhook_url" className="text-sm font-medium">Webhook (opcional)</Label>
+                  <Input
+                    id="webhook_url"
+                    type="url"
+                    value={form.webhook_url ?? ''}
+                    onChange={(e) => {
+                      setForm({ ...form, webhook_url: e.target.value })
+                      setHasUnsavedChanges(true)
+                    }}
+                    className="mt-2"
+                    placeholder="https://hooks.zapier.com/... ou URL do ClickMax / HubSpot / n8n"
+                  />
+                  <p className="text-xs text-slate-500 mt-2">
+                    A cada resposta enviada, fazemos um POST em JSON para esta URL com o formulário, a data e as respostas (por ID e por título da pergunta).
+                  </p>
                 </div>
               </div>
             </TabsContent>
@@ -434,7 +454,7 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
           {selectedQuestion && (
             <div className="w-96 bg-white border-r border-slate-200 overflow-auto">
               <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-                <h3 className="font-medium">Edit Question</h3>
+                <h3 className="font-medium">Editar pergunta</h3>
                 <Button 
                   variant="ghost" 
                   size="sm"
@@ -457,7 +477,7 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
               <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden mb-4">
                 <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 border-b border-slate-200">
                   <Eye className="w-4 h-4 text-slate-500" />
-                  <span className="text-sm font-medium text-slate-600">Preview</span>
+                  <span className="text-sm font-medium text-slate-600">Pré-visualização</span>
                 </div>
                 <div 
                   className="min-h-[500px]"
@@ -483,9 +503,9 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
       <Dialog open={showAddQuestion} onOpenChange={setShowAddQuestion}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Add Question</DialogTitle>
+            <DialogTitle>Adicionar pergunta</DialogTitle>
             <DialogDescription>
-              Choose a question type to add to your form
+              Escolha o tipo de pergunta que você quer adicionar ao formulário
             </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-3 gap-3 py-4">
@@ -493,9 +513,9 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
               <button
                 key={qt.type}
                 onClick={() => addQuestion(qt.type)}
-                className="p-4 rounded-lg border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-all text-left group"
+                className="p-4 rounded-lg border border-slate-200 hover:border-amber-300 hover:bg-amber-50 transition-all text-left group"
               >
-                <qt.icon className="w-6 h-6 text-slate-400 group-hover:text-blue-600 mb-2" />
+                <qt.icon className="w-6 h-6 text-slate-400 group-hover:text-amber-700 mb-2" />
                 <p className="font-medium text-sm text-slate-900">{qt.label}</p>
                 <p className="text-xs text-slate-500 mt-1">{qt.description}</p>
               </button>
@@ -509,35 +529,35 @@ export function FormBuilder({ form: initialForm }: FormBuilderProps) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {form.status === 'published' ? 'Unpublish form?' : 'Publish form?'}
+              {form.status === 'published' ? 'Despublicar formulário?' : 'Publicar formulário?'}
             </DialogTitle>
             <DialogDescription>
               {form.status === 'published' 
-                ? 'This will make your form inaccessible to respondents. Existing responses will be kept.'
-                : 'Your form will be accessible at:'
+                ? 'O formulário deixará de ficar acessível aos respondentes. As respostas já recebidas serão mantidas.'
+                : 'Seu formulário ficará acessível em:'
               }
             </DialogDescription>
           </DialogHeader>
           {form.status !== 'published' && (
             <div className="p-3 bg-slate-50 rounded-lg">
-              <code className="text-sm text-blue-600">
+              <code className="text-sm text-amber-700">
                 {typeof window !== 'undefined' ? window.location.origin : ''}/f/{form.slug}
               </code>
             </div>
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowPublishDialog(false)}>
-              Cancel
+              Cancelar
             </Button>
             <Button 
               onClick={handlePublish}
               disabled={isSaving}
               className={form.status === 'published' 
                 ? 'bg-amber-500 hover:bg-amber-600' 
-                : 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20'
+                : 'bg-slate-900 hover:bg-slate-800 shadow-lg shadow-slate-900/20'
               }
             >
-              {isSaving ? 'Saving...' : form.status === 'published' ? 'Unpublish' : 'Publish'}
+              {isSaving ? 'Salvando...' : form.status === 'published' ? 'Despublicar' : 'Publicar'}
             </Button>
           </DialogFooter>
         </DialogContent>

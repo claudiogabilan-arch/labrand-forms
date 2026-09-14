@@ -25,12 +25,12 @@ export default async function NewFormPage() {
   const newForm: FormInsert = {
     id: formId,
     user_id: user.id,
-    title: 'Untitled Form',
+    title: 'Formulário sem título',
     slug: slug,
     status: 'draft',
-    theme: 'minimal',
+    theme: 'labrand',
     questions: [],
-    thank_you_message: 'Thank you for your response!',
+    thank_you_message: 'Obrigado pela sua resposta.',
   }
 
   const { error } = await supabase

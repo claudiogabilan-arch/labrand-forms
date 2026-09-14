@@ -1,4 +1,4 @@
--- OpenForm Database Schema
+-- LABrand Forms — schema do banco (Supabase/PostgreSQL)
 -- Run this in your Supabase SQL Editor
 
 -- Enable UUID extension
@@ -6,7 +6,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Create enum types
 CREATE TYPE form_status AS ENUM ('draft', 'published', 'closed');
-CREATE TYPE theme_preset AS ENUM ('midnight', 'ocean', 'sunset', 'forest', 'lavender', 'minimal');
+CREATE TYPE theme_preset AS ENUM ('labrand', 'midnight', 'ocean', 'sunset', 'forest', 'lavender', 'minimal');
 
 -- Profiles table (extends Supabase auth.users)
 CREATE TABLE profiles (
@@ -22,13 +22,14 @@ CREATE TABLE profiles (
 CREATE TABLE forms (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
-  title TEXT NOT NULL DEFAULT 'Untitled Form',
+  title TEXT NOT NULL DEFAULT 'Formulário sem título',
   description TEXT,
   slug TEXT NOT NULL,
   status form_status DEFAULT 'draft' NOT NULL,
-  theme theme_preset DEFAULT 'minimal' NOT NULL,
+  theme theme_preset DEFAULT 'labrand' NOT NULL,
   questions JSONB DEFAULT '[]'::jsonb NOT NULL,
-  thank_you_message TEXT DEFAULT 'Thank you for your response!' NOT NULL,
+  thank_you_message TEXT DEFAULT 'Obrigado pela sua resposta.' NOT NULL,
+  webhook_url TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
   
@@ -199,3 +200,59 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+-- ===========================================
+-- Webhook por formulário (LABrand Forms)
+-- ===========================================
+-- Quando uma resposta é registrada, o banco envia um POST (via pg_net) para
+-- forms.webhook_url, se estiver preenchido. Serve para ClickMax, HubSpot,
+-- Zapier, Make, n8n etc. Nenhuma chave secreta fica no app.
+
+CREATE EXTENSION IF NOT EXISTS pg_net;
+
+CREATE OR REPLACE FUNCTION notify_form_webhook()
+RETURNS TRIGGER AS $$
+DECLARE
+  f RECORD;
+  payload JSONB;
+BEGIN
+  SELECT id, title, slug, questions, webhook_url INTO f FROM forms WHERE id = NEW.form_id;
+
+  IF f.webhook_url IS NULL OR f.webhook_url = '' THEN
+    RETURN NEW;
+  END IF;
+
+  payload := jsonb_build_object(
+    'event', 'response.created',
+    'form', jsonb_build_object('id', f.id, 'title', f.title, 'slug', f.slug),
+    'response', jsonb_build_object(
+      'id', NEW.id,
+      'submitted_at', NEW.submitted_at,
+      'answers', NEW.answers,
+      'answers_by_title', (
+        SELECT COALESCE(jsonb_object_agg(q->>'title', NEW.answers->(q->>'id')), '{}'::jsonb)
+        FROM jsonb_array_elements(f.questions) q
+        WHERE NEW.answers ? (q->>'id')
+      )
+    )
+  );
+
+  PERFORM net.http_post(
+    url := f.webhook_url,
+    body := payload,
+    headers := '{"Content-Type": "application/json", "User-Agent": "LABrand-Forms/1.0"}'::jsonb
+  );
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_response_created_webhook
+  AFTER INSERT ON responses
+  FOR EACH ROW EXECUTE FUNCTION notify_form_webhook();
+
+-- A URL do webhook é privada: visitantes anônimos (que leem formulários
+-- publicados) não podem ler a coluna webhook_url.
+REVOKE SELECT ON forms FROM anon;
+GRANT SELECT (id, user_id, title, description, slug, status, theme, questions, thank_you_message, created_at, updated_at)
+  ON forms TO anon;

@@ -1,166 +1,81 @@
-# OpenForm
+# LABrand Forms
 
-A beautiful, open-source TypeForm alternative. Create engaging forms with a one-question-at-a-time experience.
+Formulários que fazem uma pergunta por vez. Diagnósticos, briefings e pesquisas com experiência de conversa, no padrão LABrand.
 
-![OpenForm Logo](logo.jpg)
+Fork do [OpenForm](https://github.com/dabit3/openform) (MIT), customizado por Claudio Gabilan: interface em português do Brasil, tema LABrand (grafite, off-white e âmbar), webhook por formulário e identidade própria.
 
-## Features
+## O que tem
 
-- **6 beautiful themes** - Midnight, Ocean, Sunset, Forest, Lavender, Minimal
-- **Keyboard navigation** - Navigate with Enter, arrow keys, and scroll wheel
-- **Mobile-first forms** - Responsive form-taking experience
-- **Secure authentication** - Google OAuth and Magic Link
-- **Response dashboard** - View, search, filter, and export to CSV
-- **13 question types** - Text, multiple choice, rating, file upload, and more
+- 13 tipos de pergunta: texto curto, texto longo, lista suspensa, múltipla escolha, e-mail, telefone, número, data, avaliação (1–5), escala de opinião (1–10), sim/não, upload de arquivo, URL.
+- Player estilo Typeform: uma pergunta por vez, navegação por teclado (Enter, setas, scroll), barra de progresso, mobile first.
+- 7 temas, sendo **LABrand** o padrão.
+- Login com Google ou link mágico por e-mail (Supabase Auth).
+- Painel de respostas: busca, filtro, exportação CSV.
+- **Webhook por formulário**: a cada resposta, o banco envia um POST em JSON para a URL configurada (ClickMax, HubSpot, Zapier, Make, n8n…). Sem chave secreta no app.
+- Upload de arquivos via Cloudflare R2 (opcional).
 
-## Question types
+## Stack
 
-| Type | Description |
-|------|-------------|
-| Short text | Single line text input |
-| Long text | Multi-line textarea |
-| Dropdown | Select one option |
-| Checkboxes | Select multiple options |
-| Email | Email with validation |
-| Phone | Phone number input |
-| Number | Numeric input |
-| Date | Date picker |
-| Rating | Star rating (1-5) |
-| Opinion scale | Numeric scale (1-10) |
-| Yes/No | Binary choice |
-| File upload | Images and PDFs |
-| Website URL | URL with validation |
+Next.js 16 (App Router) · React 19 · Supabase (Postgres + Auth + pg_net) · Tailwind CSS v4 · shadcn/ui · Framer Motion.
 
-## Tech stack
+## Colocar pra rodar
 
-- **Framework**: Next.js 16 (App Router)
-- **Database**: Supabase (PostgreSQL)
-- **Auth**: Supabase Auth (Google OAuth + Magic Link)
-- **Styling**: Tailwind CSS + shadcn/ui
-- **Animations**: Framer Motion
-- **File storage**: Cloudflare R2 (optional)
+### 1. Supabase (5 minutos)
 
-## Getting started
+1. Crie um projeto em [supabase.com](https://supabase.com).
+2. Abra **SQL Editor**, cole o conteúdo de `supabase/schema.sql` e execute.
+3. **Authentication → Providers → Google**: ative e cole Client ID / Client Secret do Google Cloud Console. Redirect URI no Google: `https://SEU_PROJETO.supabase.co/auth/v1/callback`.
+4. **Authentication → URL Configuration**: Site URL `http://localhost:3000` e redirect `http://localhost:3000/auth/callback` (depois adicione a URL de produção).
+5. **Settings → API**: copie Project URL e anon key.
 
-### Prerequisites
+Se quiser só link mágico, pule o passo 3.
 
-- Node.js 18+
-- A Supabase account
-- (Optional) Cloudflare account for file uploads
-
-### 1. Clone and install
+### 2. Rodar local
 
 ```bash
-git clone https://github.com/yourusername/openform.git
-cd openform
 npm install
+cp .env.example .env.local   # preencha NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY
+npm run dev                  # http://localhost:3000
 ```
 
-### 2. Set up Supabase
+### 3. Deploy na Vercel
 
-1. Create a new project at [supabase.com](https://supabase.com)
+1. Suba o repositório no GitHub.
+2. Em [vercel.com](https://vercel.com), **Add New Project → Import** o repositório.
+3. Em Environment Variables, adicione as mesmas variáveis do `.env.local`.
+4. Deploy. Depois, volte ao Supabase (URL Configuration) e adicione `https://SEU-DOMINIO/auth/callback`.
 
-2. Run the database schema in SQL Editor:
-   - Copy the contents of `supabase/schema.sql`
-   - Paste and run in Supabase SQL Editor
+## Webhook
 
-3. Configure authentication:
+Em **Configurações** do formulário, preencha **Webhook (opcional)** com a URL de destino. Cada resposta enviada gera:
 
-   **Enable Google OAuth:**
-   - Go to Authentication, then Providers, then Google
-   - Enable and add your Google OAuth credentials
-   - Get credentials from [Google Cloud Console](https://console.cloud.google.com)
-   - Set redirect URI: `https://YOUR_PROJECT.supabase.co/auth/v1/callback`
+```json
+{
+  "event": "response.created",
+  "form": { "id": "uuid", "title": "Diagnóstico de marca", "slug": "diagnostico" },
+  "response": {
+    "id": "uuid",
+    "submitted_at": "2026-09-14T12:00:00Z",
+    "answers": { "<id-da-pergunta>": "valor" },
+    "answers_by_title": { "Qual é o seu e-mail?": "nome@exemplo.com" }
+  }
+}
+```
 
-   **Configure URLs:**
-   - Go to Authentication, then URL Configuration
-   - Site URL: `http://localhost:3000`
-   - Add redirect URL: `http://localhost:3000/auth/callback`
+O disparo é feito por trigger no Postgres usando `pg_net`. Para depurar, consulte a tabela `net._http_response` no SQL Editor. A coluna `webhook_url` não é legível por visitantes anônimos.
 
-4. Get your API keys:
-   - Go to Settings, then API
-   - Copy "Project URL" and "anon public" key
+## Upload de arquivos (opcional)
 
-### 3. Configure environment variables
+Crie um bucket no Cloudflare R2, gere um token com leitura/escrita e preencha `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME` e `R2_PUBLIC_URL` no `.env.local`.
+
+## Comandos
 
 ```bash
-cp .env.example .env.local
+npm run dev    # desenvolvimento
+npm run build  # build de produção
+npm run lint   # lint
 ```
 
-Edit `.env.local` with your Supabase credentials:
+## Licença
 
-```env
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-```
-
-### 4. Run the development server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) to see your app.
-
-## File uploads (optional)
-
-To enable file uploads, configure Cloudflare R2:
-
-1. Create an R2 bucket in your Cloudflare dashboard
-2. Create an API token with R2 read/write permissions
-3. Add the credentials to `.env.local`:
-
-```env
-R2_ACCOUNT_ID=your-account-id
-R2_ACCESS_KEY_ID=your-access-key
-R2_SECRET_ACCESS_KEY=your-secret-key
-R2_BUCKET_NAME=openform-uploads
-R2_PUBLIC_URL=https://your-bucket.r2.dev
-```
-
-## Deployment
-
-### Vercel (recommended)
-
-1. Push your code to GitHub
-2. Import the repository in Vercel
-3. Add environment variables in Vercel dashboard
-4. Deploy
-
-Remember to update your Supabase URL Configuration with your production URL.
-
-## Project structure
-
-```
-openform/
-├── app/
-│   ├── (auth)/           # Auth pages (login)
-│   ├── (dashboard)/      # Protected dashboard pages
-│   │   ├── dashboard/    # Forms list
-│   │   ├── forms/        # Form builder and responses
-│   │   └── settings/     # User settings
-│   ├── api/              # API routes
-│   ├── auth/             # Auth callback
-│   └── f/[slug]/         # Public form pages
-├── components/
-│   ├── dashboard/        # Dashboard components
-│   ├── form-builder/     # Form builder components
-│   ├── form-player/      # Form player components
-│   ├── responses/        # Response dashboard
-│   └── ui/               # shadcn/ui components
-├── lib/
-│   ├── supabase/         # Supabase clients
-│   ├── database.types.ts # TypeScript types
-│   ├── questions.ts      # Question type definitions
-│   └── themes.ts         # Theme configurations
-└── supabase/
-    └── schema.sql        # Database schema
-```
-
-## License
-
-MIT License - feel free to use this for any project.
-
-## Contributing
-
-Contributions are welcome. Please open an issue or pull request.
+MIT. Baseado no OpenForm de [dabit3](https://github.com/dabit3).

@@ -39,30 +39,30 @@ export default async function DashboardPage() {
     <div className="max-w-7xl mx-auto px-6 py-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">My Forms</h1>
-          <p className="text-slate-600 mt-1">Create and manage your forms</p>
+          <h1 className="text-2xl font-bold text-slate-900">Meus formulários</h1>
+          <p className="text-slate-600 mt-1">Crie e gerencie seus formulários</p>
         </div>
         <Link href="/forms/new">
-          <Button className="bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all hover:shadow-blue-600/30 hover:-translate-y-0.5">
+          <Button className="bg-slate-900 hover:bg-slate-800 shadow-lg shadow-slate-900/20 transition-all hover:shadow-slate-900/30 hover:-translate-y-0.5">
             <Plus className="w-4 h-4 mr-2" />
-            Create Form
+            Novo formulário
           </Button>
         </Link>
       </div>
 
       {forms.length === 0 ? (
-        <Card className="p-16 text-center border-dashed border-2 border-blue-200/60 bg-gradient-to-br from-white via-blue-50/30 to-sky-50/30">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-blue-100 to-sky-100 flex items-center justify-center shadow-lg shadow-blue-500/10">
-            <FileText className="w-10 h-10 text-blue-500" />
+        <Card className="p-16 text-center border-dashed border-2 border-amber-200/60 bg-gradient-to-br from-white via-amber-50/30 to-stone-50/30">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-amber-100 to-stone-100 flex items-center justify-center shadow-lg shadow-amber-500/10">
+            <FileText className="w-10 h-10 text-amber-600" />
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-3">Create your first form</h2>
+          <h2 className="text-2xl font-bold text-slate-900 mb-3">Crie seu primeiro formulário</h2>
           <p className="text-slate-600 mb-8 max-w-md mx-auto leading-relaxed">
-            Build beautiful, engaging forms that people actually want to fill out. One question at a time.
+            Diagnósticos, briefings e pesquisas com uma pergunta por vez, no padrão LABrand.
           </p>
           <Link href="/forms/new">
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/25 transition-all hover:shadow-blue-600/35 hover:-translate-y-0.5">
+            <Button size="lg" className="bg-slate-900 hover:bg-slate-800 shadow-lg shadow-slate-900/25 transition-all hover:shadow-slate-900/35 hover:-translate-y-0.5">
               <Plus className="w-5 h-5 mr-2" />
-              Create your first form
+              Criar primeiro formulário
             </Button>
           </Link>
         </Card>
