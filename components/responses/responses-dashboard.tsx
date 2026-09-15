@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Form, Response, QuestionConfig, Json } from '@/lib/database.types'
@@ -46,6 +45,8 @@ import {
   Image as ImageIcon,
   File,
   Eye,
+  Maximize2,
+  X,
 } from 'lucide-react'
 
 interface ResponsesDashboardProps {
@@ -80,7 +81,7 @@ function isFileUpload(answer: Json): boolean {
   return (
     'name' in obj &&
     typeof obj.name === 'string' &&
-    (('url' in obj && typeof obj.url === 'string') || 
+    (('url' in obj && typeof obj.url === 'string') ||
      ('data' in obj && typeof obj.data === 'string'))
   )
 }
@@ -114,8 +115,46 @@ function formatFileSize(bytes: number): string {
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
 }
 
+function downloadCSV(filename: string, rows: string[][]) {
+  const csvContent = rows
+    .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    .join('\n')
+
+  // BOM para o Excel abrir acentuação corretamente
+  const blob = new Blob(['﻿' + csvContent], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(blob)
+  link.download = filename
+  link.click()
+  URL.revokeObjectURL(link.href)
+}
+
+function Checkbox({
+  checked,
+  indeterminate,
+  onChange,
+  label,
+}: {
+  checked: boolean
+  indeterminate?: boolean
+  onChange: (checked: boolean) => void
+  label: string
+}) {
+  return (
+    <input
+      type="checkbox"
+      aria-label={label}
+      checked={checked}
+      ref={(el) => {
+        if (el) el.indeterminate = !!indeterminate && !checked
+      }}
+      onChange={(e) => onChange(e.target.checked)}
+      className="h-4 w-4 cursor-pointer rounded border-slate-300 accent-slate-900"
+    />
+  )
+}
+
 export function ResponsesDashboard({ form, responses: initialResponses }: ResponsesDashboardProps) {
-  const router = useRouter()
   const supabase = createClient()
   const questions = (form.questions as QuestionConfig[]) || []
 
@@ -123,8 +162,21 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
   const [searchQuery, setSearchQuery] = useState('')
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [responseToDelete, setResponseToDelete] = useState<string | null>(null)
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [filePreview, setFilePreview] = useState<FileUpload | null>(null)
+
+  // Seleção de linhas
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+
+  // Detalhe de uma resposta
+  const [detailId, setDetailId] = useState<string | null>(null)
+
+  // Exportação seletiva
+  const [exportOpen, setExportOpen] = useState(false)
+  const [exportScope, setExportScope] = useState<'all' | 'selected'>('all')
+  const [exportQuestionIds, setExportQuestionIds] = useState<string[]>(questions.map(q => q.id))
+  const [exportDate, setExportDate] = useState(true)
 
   // Filter responses based on search query
   const filteredResponses = useMemo(() => {
@@ -133,15 +185,40 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
     const query = searchQuery.toLowerCase()
     return responses.filter(response => {
       const answers = response.answers as Record<string, Json>
-      return Object.values(answers).some(answer => 
+      return Object.values(answers).some(answer =>
         formatAnswer(answer).toLowerCase().includes(query)
       )
     })
   }, [responses, searchQuery])
 
+  const detailResponse = useMemo(
+    () => responses.find(r => r.id === detailId) || null,
+    [responses, detailId]
+  )
+  const detailIndex = useMemo(
+    () => (detailId ? responses.findIndex(r => r.id === detailId) : -1),
+    [responses, detailId]
+  )
+
+  const selectedCount = selectedIds.length
+  const allFilteredSelected =
+    filteredResponses.length > 0 &&
+    filteredResponses.every(r => selectedIds.includes(r.id))
+
+  const toggleOne = (id: string, checked: boolean) => {
+    setSelectedIds(prev => (checked ? [...new Set([...prev, id])] : prev.filter(x => x !== id)))
+  }
+
+  const toggleAllFiltered = (checked: boolean) => {
+    const ids = filteredResponses.map(r => r.id)
+    setSelectedIds(prev =>
+      checked ? [...new Set([...prev, ...ids])] : prev.filter(id => !ids.includes(id))
+    )
+  }
+
   const handleDelete = async () => {
     if (!responseToDelete) return
-    
+
     setIsDeleting(true)
     const { error } = await supabase
       .from('responses')
@@ -152,6 +229,8 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
       toast.error('Não foi possível excluir a resposta')
     } else {
       setResponses(prev => prev.filter(r => r.id !== responseToDelete))
+      setSelectedIds(prev => prev.filter(id => id !== responseToDelete))
+      if (detailId === responseToDelete) setDetailId(null)
       toast.success('Resposta excluída')
     }
     setIsDeleting(false)
@@ -159,41 +238,95 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
     setResponseToDelete(null)
   }
 
-  const exportToCSV = () => {
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return
+
+    setIsDeleting(true)
+    const ids = [...selectedIds]
+    const { error } = await supabase.from('responses').delete().in('id', ids)
+
+    if (error) {
+      toast.error('Não foi possível excluir as respostas')
+    } else {
+      setResponses(prev => prev.filter(r => !ids.includes(r.id)))
+      setSelectedIds([])
+      if (detailId && ids.includes(detailId)) setDetailId(null)
+      toast.success(
+        ids.length === 1 ? 'Resposta excluída' : `${ids.length} respostas excluídas`
+      )
+    }
+    setIsDeleting(false)
+    setBulkDeleteOpen(false)
+  }
+
+  const openExport = () => {
     if (responses.length === 0) {
       toast.error('Nenhuma resposta para exportar')
       return
     }
+    setExportScope(selectedCount > 0 ? 'selected' : 'all')
+    setExportOpen(true)
+  }
 
-    // Build CSV header
-    const headers = ['Enviado em', ...questions.map(q => q.title || 'Sem título')]
-    
-    // Build CSV rows
-    const rows = responses.map(response => {
+  const runExport = () => {
+    const base = exportScope === 'selected'
+      ? responses.filter(r => selectedIds.includes(r.id))
+      : filteredResponses
+
+    if (base.length === 0) {
+      toast.error('Nenhuma resposta no recorte escolhido')
+      return
+    }
+
+    const cols = questions.filter(q => exportQuestionIds.includes(q.id))
+    if (cols.length === 0 && !exportDate) {
+      toast.error('Escolha ao menos uma coluna')
+      return
+    }
+
+    const headers = [
+      ...(exportDate ? ['Enviado em'] : []),
+      ...cols.map(q => q.title || 'Sem título'),
+    ]
+    const rows = base.map(response => {
       const answers = response.answers as Record<string, Json>
       return [
-        formatDate(response.submitted_at),
-        ...questions.map(q => formatAnswer(answers[q.id]))
+        ...(exportDate ? [formatDate(response.submitted_at)] : []),
+        ...cols.map(q => formatAnswer(answers[q.id])),
       ]
     })
 
-    // Create CSV content
-    const csvContent = [
-      headers.map(h => `"${h.replace(/"/g, '""')}"`).join(','),
-      ...rows.map(row => 
-        row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
-      )
-    ].join('\n')
+    downloadCSV(
+      `${form.title || 'formulario'}-respostas-${new Date().toISOString().split('T')[0]}.csv`,
+      [headers, ...rows]
+    )
+    setExportOpen(false)
+    toast.success(`CSV exportado (${base.length} ${base.length === 1 ? 'resposta' : 'respostas'})`)
+  }
 
-    // Download
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const link = document.createElement('a')
-    link.href = URL.createObjectURL(blob)
-    link.download = `${form.title || 'formulario'}-respostas-${new Date().toISOString().split('T')[0]}.csv`
-    link.click()
-    URL.revokeObjectURL(link.href)
-    
+  const exportSingle = (response: Response) => {
+    const answers = response.answers as Record<string, Json>
+    const rows: string[][] = [
+      ['Pergunta', 'Resposta'],
+      ['Enviado em', formatDate(response.submitted_at)],
+      ...questions.map(q => [q.title || 'Sem título', formatAnswer(answers[q.id])]),
+    ]
+    downloadCSV(
+      `${form.title || 'formulario'}-resposta-${response.id.slice(0, 8)}.csv`,
+      rows
+    )
     toast.success('CSV exportado')
+  }
+
+  const copySingle = (response: Response) => {
+    const answers = response.answers as Record<string, Json>
+    const text = [
+      `${form.title} — resposta de ${formatDate(response.submitted_at)}`,
+      '',
+      ...questions.map(q => `${q.title || 'Sem título'}\n${formatAnswer(answers[q.id])}\n`),
+    ].join('\n')
+    navigator.clipboard.writeText(text)
+    toast.success('Resposta copiada')
   }
 
   const copyFormLink = () => {
@@ -267,7 +400,7 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
           </div>
           <h2 className="text-xl font-semibold text-slate-900 mb-2">Nenhuma resposta ainda</h2>
           <p className="text-slate-600 max-w-sm mx-auto">
-            {form.status === 'published' 
+            {form.status === 'published'
               ? 'Compartilhe o link para começar a receber respostas'
               : 'Publique o formulário para começar a receber respostas'
             }
@@ -292,11 +425,38 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
                 className="pl-10"
               />
             </div>
-            <Button onClick={exportToCSV} variant="outline">
+            <Button onClick={openExport} variant="outline">
               <Download className="w-4 h-4 mr-2" />
               Exportar CSV
             </Button>
           </div>
+
+          {/* Barra de seleção */}
+          {selectedCount > 0 && (
+            <div className="flex flex-wrap items-center gap-3 mb-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+              <span className="text-sm font-medium text-slate-700">
+                {selectedCount} {selectedCount === 1 ? 'resposta selecionada' : 'respostas selecionadas'}
+              </span>
+              <div className="flex-1" />
+              <Button variant="outline" size="sm" onClick={openExport}>
+                <Download className="w-4 h-4 mr-2" />
+                Exportar selecionadas
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-red-600 hover:text-red-700"
+                onClick={() => setBulkDeleteOpen(true)}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Excluir selecionadas
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setSelectedIds([])}>
+                <X className="w-4 h-4 mr-2" />
+                Limpar
+              </Button>
+            </div>
+          )}
 
           {/* Table */}
           <Card className="overflow-hidden">
@@ -304,7 +464,15 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[180px] sticky left-0 bg-white z-10 pl-6">Enviado em</TableHead>
+                    <TableHead className="w-[44px] sticky left-0 bg-white z-10 pl-6">
+                      <Checkbox
+                        checked={allFilteredSelected}
+                        indeterminate={selectedCount > 0}
+                        onChange={toggleAllFiltered}
+                        label="Selecionar todas as respostas"
+                      />
+                    </TableHead>
+                    <TableHead className="w-[180px]">Enviado em</TableHead>
                     {questions.map((question, index) => (
                       <TableHead key={question.id} className="min-w-[200px]">
                         <span className="text-slate-400 mr-2">{index + 1}.</span>
@@ -318,14 +486,29 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
                 <TableBody>
                   {filteredResponses.map((response) => {
                     const answers = response.answers as Record<string, Json>
+                    const isSelected = selectedIds.includes(response.id)
                     return (
-                      <TableRow key={response.id}>
-                        <TableCell className="font-medium sticky left-0 bg-white z-10 pl-6">
+                      <TableRow
+                        key={response.id}
+                        onClick={() => setDetailId(response.id)}
+                        className={`cursor-pointer ${isSelected ? 'bg-slate-50' : ''}`}
+                      >
+                        <TableCell
+                          className={`sticky left-0 z-10 pl-6 ${isSelected ? 'bg-slate-50' : 'bg-white'}`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Checkbox
+                            checked={isSelected}
+                            onChange={(checked) => toggleOne(response.id, checked)}
+                            label="Selecionar resposta"
+                          />
+                        </TableCell>
+                        <TableCell className="font-medium whitespace-nowrap">
                           {formatDate(response.submitted_at)}
                         </TableCell>
                         {questions.map((question) => {
                           const answer = answers[question.id]
-                          
+
                           // Special rendering for file uploads
                           if (isFileUpload(answer)) {
                             const file = asFileUpload(answer)
@@ -333,7 +516,10 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
                             return (
                               <TableCell key={question.id} className="max-w-[300px]">
                                 <button
-                                  onClick={() => setFilePreview(file)}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setFilePreview(file)
+                                  }}
                                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 transition-colors text-sm group"
                                 >
                                   {isImage ? (
@@ -347,14 +533,17 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
                               </TableCell>
                             )
                           }
-                          
+
                           return (
                             <TableCell key={question.id} className="max-w-[300px] truncate">
                               {formatAnswer(answer)}
                             </TableCell>
                           )
                         })}
-                        <TableCell className="sticky right-0 bg-white z-10">
+                        <TableCell
+                          className={`sticky right-0 z-10 ${isSelected ? 'bg-slate-50' : 'bg-white'}`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -362,6 +551,14 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => setDetailId(response.id)}>
+                                <Maximize2 className="mr-2 h-4 w-4" />
+                                Ver resposta
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => exportSingle(response)}>
+                                <Download className="mr-2 h-4 w-4" />
+                                Exportar esta resposta
+                              </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => {
                                   setResponseToDelete(response.id)
@@ -392,6 +589,190 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
         </>
       )}
 
+      {/* Detalhe da resposta */}
+      <Dialog open={!!detailResponse} onOpenChange={(open) => !open && setDetailId(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>
+              Resposta {detailIndex >= 0 ? `#${responses.length - detailIndex}` : ''}
+            </DialogTitle>
+            <DialogDescription>
+              {detailResponse ? `Enviada em ${formatDate(detailResponse.submitted_at)}` : ''}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-auto min-h-0 mt-2 pr-1 space-y-5">
+            {detailResponse && questions.map((question, index) => {
+              const answers = detailResponse.answers as Record<string, Json>
+              const answer = answers[question.id]
+              return (
+                <div key={question.id} className="border-b border-slate-100 pb-4 last:border-0">
+                  <p className="text-sm text-slate-500 mb-1">
+                    <span className="text-slate-400 mr-2">{index + 1}.</span>
+                    {question.title || 'Sem título'}
+                  </p>
+                  {isFileUpload(answer) ? (
+                    <button
+                      onClick={() => setFilePreview(asFileUpload(answer))}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 transition-colors text-sm"
+                    >
+                      <File className="w-4 h-4" />
+                      {asFileUpload(answer).name}
+                    </button>
+                  ) : (
+                    <p className="text-slate-900 whitespace-pre-wrap break-words">
+                      {formatAnswer(answer)}
+                    </p>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+
+          <DialogFooter className="mt-4 gap-2 sm:justify-between">
+            <Button
+              variant="outline"
+              className="text-red-600 hover:text-red-700"
+              onClick={() => {
+                if (!detailResponse) return
+                setResponseToDelete(detailResponse.id)
+                setDeleteDialogOpen(true)
+              }}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Excluir
+            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => detailResponse && copySingle(detailResponse)}
+              >
+                <Copy className="w-4 h-4 mr-2" />
+                Copiar
+              </Button>
+              <Button
+                className="bg-slate-900 hover:bg-slate-800"
+                onClick={() => detailResponse && exportSingle(detailResponse)}
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Exportar CSV
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Exportação seletiva */}
+      <Dialog open={exportOpen} onOpenChange={setExportOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Exportar CSV</DialogTitle>
+            <DialogDescription>
+              Escolha quais respostas e quais perguntas entram no arquivo.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-auto min-h-0 space-y-5 mt-2 pr-1">
+            <div>
+              <p className="text-sm font-medium text-slate-900 mb-2">Respostas</p>
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="export-scope"
+                    checked={exportScope === 'all'}
+                    onChange={() => setExportScope('all')}
+                    className="h-4 w-4 accent-slate-900"
+                  />
+                  {searchQuery.trim()
+                    ? `Todas as respostas da busca atual (${filteredResponses.length})`
+                    : `Todas as respostas (${responses.length})`}
+                </label>
+                <label
+                  className={`flex items-center gap-2 text-sm cursor-pointer ${selectedCount === 0 ? 'text-slate-400' : 'text-slate-700'}`}
+                >
+                  <input
+                    type="radio"
+                    name="export-scope"
+                    disabled={selectedCount === 0}
+                    checked={exportScope === 'selected'}
+                    onChange={() => setExportScope('selected')}
+                    className="h-4 w-4 accent-slate-900"
+                  />
+                  Apenas as selecionadas ({selectedCount})
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-slate-900">
+                  Perguntas ({exportQuestionIds.length} de {questions.length})
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setExportQuestionIds(questions.map(q => q.id))}
+                  >
+                    Marcar todas
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setExportQuestionIds([])}>
+                    Desmarcar todas
+                  </Button>
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-slate-200 divide-y divide-slate-100 max-h-[40vh] overflow-auto">
+                <label className="flex items-center gap-3 px-3 py-2 text-sm cursor-pointer hover:bg-slate-50">
+                  <Checkbox
+                    checked={exportDate}
+                    onChange={setExportDate}
+                    label="Incluir data de envio"
+                  />
+                  <span className="text-slate-700">Enviado em (data)</span>
+                </label>
+                {questions.map((question, index) => {
+                  const checked = exportQuestionIds.includes(question.id)
+                  return (
+                    <label
+                      key={question.id}
+                      className="flex items-center gap-3 px-3 py-2 text-sm cursor-pointer hover:bg-slate-50"
+                    >
+                      <Checkbox
+                        checked={checked}
+                        onChange={(value) =>
+                          setExportQuestionIds(prev =>
+                            value
+                              ? [...prev, question.id]
+                              : prev.filter(id => id !== question.id)
+                          )
+                        }
+                        label={question.title || 'Sem título'}
+                      />
+                      <span className="text-slate-700">
+                        <span className="text-slate-400 mr-2">{index + 1}.</span>
+                        {question.title || 'Sem título'}
+                      </span>
+                    </label>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setExportOpen(false)}>
+              Cancelar
+            </Button>
+            <Button className="bg-slate-900 hover:bg-slate-800" onClick={runExport}>
+              <Download className="w-4 h-4 mr-2" />
+              Exportar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Delete confirmation dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
@@ -405,11 +786,33 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
             <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={handleDelete}
               disabled={isDeleting}
             >
+              {isDeleting ? 'Excluindo...' : 'Excluir'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk delete confirmation */}
+      <Dialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Excluir {selectedCount} {selectedCount === 1 ? 'resposta' : 'respostas'}
+            </DialogTitle>
+            <DialogDescription>
+              Tem certeza? As respostas selecionadas serão excluídas e a ação não pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkDeleteOpen(false)}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={handleBulkDelete} disabled={isDeleting}>
               {isDeleting ? 'Excluindo...' : 'Excluir'}
             </Button>
           </DialogFooter>
@@ -432,11 +835,12 @@ export function ResponsesDashboard({ form, responses: initialResponses }: Respon
               {filePreview?.size ? formatFileSize(filePreview.size) + ' • ' : ''}{filePreview?.type}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="flex-1 overflow-auto min-h-0 mt-4">
             {filePreview?.type?.startsWith('image/') ? (
-              <img 
-                src={getFileUrl(filePreview)} 
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={getFileUrl(filePreview)}
                 alt={filePreview.name}
                 className="max-w-full h-auto rounded-lg mx-auto"
               />
