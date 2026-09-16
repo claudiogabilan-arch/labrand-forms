@@ -123,3 +123,24 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Animação de entrada das perguntas do player.
+   CSS puro de propósito: o Framer Motion 12 com React 19 às vezes não conclui
+   a animação de entrada e a pergunta fica presa em opacity 0 (tela preta). */
+@keyframes fp-enter {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.fp-enter {
+  animation: fp-enter 0.28s ease-out both;
+}
+
+.fp-d1 { animation-delay: 0.04s; }
+.fp-d2 { animation-delay: 0.08s; }
+.fp-d3 { animation-delay: 0.12s; }
+.fp-d4 { animation-delay: 0.16s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fp-enter { animation: none; }
+}

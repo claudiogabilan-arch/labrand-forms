@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Form, QuestionConfig, Json } from '@/lib/database.types'
 import { getTheme, getThemeCSSVariables } from '@/lib/themes'
-import { motion, AnimatePresence } from 'framer-motion'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
 import { ChevronUp, ChevronDown, Check, ArrowRight } from 'lucide-react'
@@ -26,7 +25,6 @@ export function FormPlayer({ form }: FormPlayerProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [direction, setDirection] = useState(0)
   
   const containerRef = useRef<HTMLDivElement>(null)
   const skipNextValidationRef = useRef(false)
@@ -117,13 +115,11 @@ export function FormPlayer({ form }: FormPlayerProps) {
     if (isLastQuestion) {
       handleSubmit()
     } else {
-      setDirection(1)
       setCurrentIndex(prev => Math.min(prev + 1, questions.length - 1))
     }
   }, [isLastQuestion, questions.length, validateCurrentQuestion, handleSubmit])
 
   const goToPrevious = useCallback(() => {
-    setDirection(-1)
     setCurrentIndex(prev => Math.max(prev - 1, 0))
   }, [])
 
@@ -215,20 +211,13 @@ export function FormPlayer({ form }: FormPlayerProps) {
           fontFamily: theme.fontFamily,
         }}
       >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center max-w-lg"
-        >
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-            className="w-20 h-20 mx-auto mb-8 rounded-full flex items-center justify-center"
+        <div className="fp-enter text-center max-w-lg">
+          <div
+            className="fp-enter fp-d1 w-20 h-20 mx-auto mb-8 rounded-full flex items-center justify-center"
             style={{ backgroundColor: `${theme.primaryColor}20` }}
           >
             <Check className="w-10 h-10" style={{ color: theme.primaryColor }} />
-          </motion.div>
+          </div>
           <h1 
             className="text-3xl md:text-4xl font-bold mb-4"
             style={{ color: theme.textColor }}
@@ -243,12 +232,7 @@ export function FormPlayer({ form }: FormPlayerProps) {
           </p>
           
           {/* LABrand Forms branding */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="mt-12"
-          >
+          <div className="fp-enter fp-d4 mt-12">
             <a 
               href="https://claudiogabilan.com.br"
               target="_blank"
@@ -259,8 +243,8 @@ export function FormPlayer({ form }: FormPlayerProps) {
               <span>Feito com</span>
               <span className="font-semibold">LABrand Forms</span>
             </a>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </div>
     )
   }
@@ -280,17 +264,6 @@ export function FormPlayer({ form }: FormPlayerProps) {
         </p>
       </div>
     )
-  }
-
-  const slideVariants = {
-    enter: (direction: number) => ({
-      y: direction > 0 ? 100 : -100,
-      opacity: 0,
-    }),
-    center: {
-      y: 0,
-      opacity: 1,
-    },
   }
 
   return (
@@ -320,21 +293,9 @@ export function FormPlayer({ form }: FormPlayerProps) {
       {/* Main content */}
       <main className="flex-1 flex items-center justify-center p-6 pt-12">
         <div className="w-full max-w-2xl">
-            <motion.div
-              key={currentIndex}
-              custom={direction}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              transition={{ duration: 0.25, ease: 'easeOut' }}
-            >
+            <div key={currentIndex}>
               {/* Question number */}
-              <motion.div 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 }}
-                className="mb-6 flex items-center gap-2"
-              >
+              <div className="fp-enter mb-6 flex items-center gap-2">
                 <span 
                   className="text-base font-medium"
                   style={{ color: theme.primaryColor }}
@@ -342,41 +303,30 @@ export function FormPlayer({ form }: FormPlayerProps) {
                   {currentIndex + 1}
                 </span>
                 <ArrowRight className="w-4 h-4" style={{ color: theme.primaryColor }} />
-              </motion.div>
+              </div>
 
               {/* Question */}
-              <motion.h2 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-                className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3"
+              <h2
+                className="fp-enter fp-d1 text-2xl md:text-3xl lg:text-4xl font-bold mb-3"
                 style={{ color: theme.textColor }}
               >
                 {currentQuestion.title || 'Pergunta sem título'}
                 {currentQuestion.required && (
                   <span style={{ color: theme.primaryColor }} className="ml-1">*</span>
                 )}
-              </motion.h2>
+              </h2>
 
               {currentQuestion.description && (
-                <motion.p 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="text-lg md:text-xl opacity-70 mb-8"
+                <p
+                  className="fp-enter fp-d2 text-lg md:text-xl opacity-70 mb-8"
                   style={{ color: theme.textColor }}
                 >
                   {currentQuestion.description}
-                </motion.p>
+                </p>
               )}
 
               {/* Answer input */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.25 }}
-                className="mt-8"
-              >
+              <div className="fp-enter fp-d3 mt-8">
                 <QuestionRenderer
                   question={currentQuestion}
                   value={answers[currentQuestion.id]}
@@ -397,30 +347,20 @@ export function FormPlayer({ form }: FormPlayerProps) {
                     }
                   }}
                 />
-              </motion.div>
+              </div>
 
               {/* Error message */}
-              <AnimatePresence>
-                {errors[currentQuestion.id] && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="mt-4 text-sm font-medium"
-                    style={{ color: '#EF4444' }}
-                  >
-                    {errors[currentQuestion.id]}
-                  </motion.p>
-                )}
-              </AnimatePresence>
+              {errors[currentQuestion.id] && (
+                <p
+                  className="fp-enter mt-4 text-sm font-medium"
+                  style={{ color: '#EF4444' }}
+                >
+                  {errors[currentQuestion.id]}
+                </p>
+              )}
 
               {/* Action buttons */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="mt-8 flex items-center gap-4"
-              >
+              <div className="fp-enter fp-d4 mt-8 flex items-center gap-4">
                 <Button
                   onClick={() => goToNext()}
                   disabled={isSubmitting}
@@ -449,10 +389,12 @@ export function FormPlayer({ form }: FormPlayerProps) {
                   className="text-sm opacity-50"
                   style={{ color: theme.textColor }}
                 >
-                  pressione <kbd className="font-mono font-medium">Enter ↵</kbd>
+                  {currentQuestion.type === 'long_text'
+                    ? 'clique em OK para continuar'
+                    : <>pressione <kbd className="font-mono font-medium">Enter ↵</kbd></>}
                 </span>
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
         </div>
       </main>
 
