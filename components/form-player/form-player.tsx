@@ -178,6 +178,11 @@ export function FormPlayer({ form }: FormPlayerProps) {
       // Don't interfere with scrollable inputs like textarea
       const target = e.target as HTMLElement
       if (target.tagName === 'TEXTAREA') return
+
+      // Pergunta mais alta que a tela (ex.: muitas opções, telas pequenas):
+      // o scroll é para rolar a página, não para trocar de pergunta
+      const doc = document.documentElement
+      if (doc.scrollHeight > window.innerHeight + 1) return
       
       const now = Date.now()
       if (now - lastScrollTime < scrollThreshold) return
@@ -291,7 +296,7 @@ export function FormPlayer({ form }: FormPlayerProps) {
       </div>
 
       {/* Main content */}
-      <main className="flex-1 flex items-center justify-center p-6 pt-12">
+      <main className="flex-1 flex items-center justify-center p-6 pt-12 pb-28">
         <div className="w-full max-w-2xl">
             <div key={currentIndex}>
               {/* Question number */}
@@ -399,8 +404,9 @@ export function FormPlayer({ form }: FormPlayerProps) {
       </main>
 
       {/* Navigation footer */}
-      <footer className="fixed bottom-0 left-0 right-0 p-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      {/* pointer-events-none: o rodapé fixo não pode capturar cliques no conteúdo (botão OK) */}
+      <footer className="pointer-events-none fixed bottom-0 left-0 right-0 p-4 flex items-center justify-between">
+        <div className="pointer-events-auto flex items-center gap-2">
           <Button
             variant="ghost"
             size="sm"
@@ -428,7 +434,7 @@ export function FormPlayer({ form }: FormPlayerProps) {
           href="https://claudiogabilan.com.br"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm opacity-50 hover:opacity-70 transition-opacity"
+          className="pointer-events-auto text-sm opacity-50 hover:opacity-70 transition-opacity"
           style={{ color: theme.textColor }}
         >
           Feito com <span className="font-semibold">LABrand Forms</span>
